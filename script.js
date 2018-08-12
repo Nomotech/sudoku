@@ -12,6 +12,7 @@ let field = [
   [7, 0, 0,  0, 0, 0,  0, 0, 6]
 ]
 
+// deep copy
 let copyArray = (field) => {
   let array = [
     [0, 0, 0,  0, 0, 0,  0, 0, 0],
@@ -32,6 +33,7 @@ let copyArray = (field) => {
   return array
 }
 
+// numを入れることができるところを探す
 let check = (field, num) => {
   let array = [
     [0, 0, 0,  0, 0, 0,  0, 0, 0],
@@ -66,10 +68,13 @@ let check = (field, num) => {
     }
   }
   // console.log(array)
+  // 代入可能な場所を0、代入できない場所を1として表現した9x9行列
   return array
 }
 
+// 代入可能な場所と比較して一意に定まる場所に実際に値を代入していく
 let update = (field, array, num) => {
+  // 各行に代入可能な場所が一箇所だった場合代入する
   for (let y = 0; y < 9; y++) {
     let a = {sum : 0, x : 0, y : 0}
     for (let x = 0; x < 9; x++) {
@@ -82,6 +87,7 @@ let update = (field, array, num) => {
     if (a.sum === 1) field[a.y][a.x] = num
   }
 
+  // 各列に代入可能な場所が一意に定まるときに代入する
   for (let x = 0; x < 9; x++) {
     let a = {sum : 0, x : 0, y : 0}
     for (let y = 0; y < 9; y++) {
@@ -94,6 +100,7 @@ let update = (field, array, num) => {
     if (a.sum === 1) field[a.y][a.x] = num
   }
 
+  // ブロック内で代入可能な場所が一意に定まるときに代入する
   for (let x = 0; x < 3; x++) {
     for (let y = 0; y < 3; y++) {
       let a = {sum : 0, x : 0, y : 0}
@@ -110,9 +117,10 @@ let update = (field, array, num) => {
     }
   }
   // console.log(field)
-  return field
+  return field  // 代入後の配列を返す
 }
 
+// 終了判定　
 let judge = (field) => {
   let sum = 0
   let a = 0;
@@ -122,10 +130,11 @@ let judge = (field) => {
       sum += field[y][x]
     }
   }
-  if (sum === 405) return -1
-  return a
+  if (sum === 405) return -1  // 総和が405になっている時には正解として-1を返す
+  return a                    // 残り埋まっていない枠の数を返す
 }
 
+// 一意に定まらない時は、幅探索でqueueにpushする
 let branch = (field) => {
   let min = { num : 0, sum : 81, array : field }
   for (let i = 0 ; i < 9; i++) {
@@ -156,37 +165,39 @@ let branch = (field) => {
   }
 }
 
+
 let array
-console.log(copyArray(field))
+console.log(copyArray(field)) // 初期値の提示
+
+// 一意に定まる場所を探して代入する
 let main = (field) => {
   //console.log(copyArray(field))
   let empty = 81
   let a = 81
-  while (empty > 0) {
+  while (empty > 0) { // 空欄がある限りloop
     for(let num = 1; num <= 9 ; num++) update(field, check(field, num), num)
     a = judge(field)
     empty = (empty != a) ? a : -2
     switch (empty) {
-      case -1: {
+      case -1:   // 正常終了
         console.log("Success!");
         console.log(field);
         if (tree.length > 0) main(tree.pop())
         break
-      }
-      case 0 :
+      case 0 :  // 枠が埋まったのに総和がおかしいとき
         if (tree.length > 0) main(tree.pop())
         console.log("Wrong!");
         break
-      case -2:
+      case -2:  // 一意に定まらなかったとき
         //console.log("Not unique" + a);
         break;
       default: break
     }
   }
 
-  if (empty == -2) {
+  if (empty == -2) { // 一意に定まらなかった時にbranchを切る
     branch(field)
-    if (tree.length > 0) console.log(main(tree.pop()))
+    if (tree.length > 0) console.log(main(tree.pop()))  // queueから先頭を取り出して試行
   }
   //console.log(field)
   return a
